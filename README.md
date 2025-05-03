@@ -21,6 +21,8 @@ This project demonstrates how to build a secure and lightweight CI/CD pipeline u
 
 ## Project Architecture
 
+![architecture](Screenshots_CICD/architecture_diagram.png)
+
 ```
 /home/ubuntu/
 │
@@ -71,7 +73,7 @@ sudo chmod 600 /etc/ci_env
 ```bash
 nano home/ubuntu/check_commit.py
 ```
-Python code
+#### Python code
 ```bash
 import requests
 import os
@@ -136,7 +138,7 @@ sudo bash -c "source /etc/ci_env && python3 /home/ubuntu/check_commit.py"
 ```bash
 nano home/ubuntu/deploy.sh
 ```
-bash code
+#### Bash code
 
 ```bash
 #!/bin/bash
@@ -198,7 +200,7 @@ Run `sudo crontab -e` and add:
 
 #### Cron logs screenshot
 
-Screenshot?????
+![cron_logs](Screenshots_CICD/cron_logs.png)
 ---
 
 ## Log Monitoring
@@ -216,6 +218,15 @@ tail -f /var/log/ci_cd.log
 * Make a new commit in the GitHub repo
 * Wait \~2 minutes
 * Reload EC2 public IP in browser to see deployed changes
+  
+### Pre-commit HTML file
+
+![Pre_image](Screenshots_CICD/webserver_initial.png)
+
+
+### Post-commit HTML file
+
+![Post_image](Screenshots_CICD/webserver_updated.png)
 
 ---
 
