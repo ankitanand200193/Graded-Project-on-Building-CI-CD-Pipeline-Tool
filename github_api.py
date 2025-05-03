@@ -1,37 +1,48 @@
-import os
 import requests
-from dotenv import load_dotenv
+import os
 
-# Load variables from .env file
-load_dotenv()
+# Replace with your actual values
+REPO = "ankitanand200193/Graded-Project-on-Building-CI-CD-Pipeline-Tool"
+BRANCH = "main"
+HASH_FILE = "/home/ubuntu/last_commit.txt"
 
-# Read the token
-token = os.getenv("GITHUB_TOKEN")
+# Get GitHub token from environment variable
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+if not GITHUB_TOKEN:
+    print("❌ GitHub token not found. Set it in /etc/ci_env.")
+    exit(1)
 
+# GitHub API headers
 headers = {
-    "Authorization": f"token {token}"
+    "Authorization": f"token {GITHUB_TOKEN}",
+    "Accept": "application/vnd.github.v3+json"
 }
 
-# Configuration
-owner = "ankitanand200193"    # GitHub username or organization
-repo = "Graded-Project-on-Building-CI-CD-Pipeline-Tool" # Repository name
-branch = "main"      # Branch name, usually 'main' or 'master'
+# GitHub API URL to get the latest commit on the branch
+url = f"https://api.github.com/repos/{REPO}/commits/{BRANCH}"
 
-
-# GitHub API URL
-url = f"https://api.github.com/repos/{owner}/{repo}/commits/{branch}"
-
-def get_latest_commit():
+try:
     response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        commit_data = response.json()
-        print("✅ Script is working!")
-        print("Latest Commit SHA:", commit_data['sha'])
-        print("Commit Message:", commit_data['commit']['message'])
-        print("Committed at:", commit_data['commit']['committer']['date'])
-    else:
-        print(f"❌ Failed. Status Code: {response.status_code}")
-        print("Response:", response.text)
+    response.raise_for_status()
+except requests.exceptions.RequestException as e:
+    print(f"❌ Failed to fetch commit info: {e}")
+    exit(1)
 
-if __name__ == "__main__":
-    get_latest_commit()
+latest_commit = response.json()["sha"]
+
+# Read previously saved commit hash
+if os.path.exists(HASH_FILE):
+    with open(HASH_FILE, "r") as f:
+        last_commit = f.read().strip()
+else:
+    last_commit = ""
+
+# Compare and deploy if needed
+if latest_commit != last_commit:
+    print("✅ New commit found! Deploying...")
+    os.system("/home/ubuntu/deploy.sh")  # Call your bash deploy script
+    with open(HASH_FILE, "w") as f:
+        f.write(latest_commit)
+else:
+    print("🔁 No new commits. Everything is up to date.")
+
